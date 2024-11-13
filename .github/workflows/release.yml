@@ -12,7 +12,7 @@ jobs:
   build:
     strategy:
       matrix:
-        config: [release_rev3, release_rev2, hw_troubleshoot, release_rev3-readonly_msc]
+        config: [release]
 
     runs-on: ubuntu-latest
     container: 
