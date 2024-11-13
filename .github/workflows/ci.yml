@@ -1,0 +1,50 @@
+name: CI - Build on changes in Docker container
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        config: [release]
+
+    runs-on: ubuntu-latest
+    container: 
+      image: shilga/raspberry-pi-pico-gbdk-docker:v0.4
+
+    env:
+      BUILDDIR: "build_${{ matrix.config }}"
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'true'
+
+    - name: Configure CMake
+      run: |
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        echo "Build for config: default"
+        cmake --fresh -B ${{ github.workspace }}/${{ env.BUILDDIR }}_${{ matrix.config }} -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} ${CONFARGS}
+
+    - name: Build
+      run: |
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        make -C ${{ github.workspace }}/${{ env.BUILDDIR }}_${{ matrix.config }} -j
+
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: tengucon_2024_badge-binaries-${{ matrix.config }}-${{ github.sha }}
+        path: |
+          ${{ github.workspace }}/${{ env.BUILDDIR }}_${{ matrix.config }}/*.bin
+          ${{ github.workspace }}/${{ env.BUILDDIR }}_${{ matrix.config }}/*.elf
+          ${{ github.workspace }}/${{ env.BUILDDIR }}_${{ matrix.config }}/*.elf.map
+          ${{ github.workspace }}/${{ env.BUILDDIR }}_${{ matrix.config }}/*.hex
+          ${{ github.workspace }}/${{ env.BUILDDIR }}_${{ matrix.config }}/*.uf2
