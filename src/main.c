@@ -9,6 +9,21 @@
 #include "hardware/structs/ioqspi.h"
 #include "hardware/structs/sio.h"
 
+/*
+  My docker container doesn't have this
+*/
+#ifndef PWM_DEFAULT_IRQ_NUM
+#if PICO_RP2040
+#define PWM_DEFAULT_IRQ_NUM() PWM_IRQ_WRAP
+#else
+#define PWM_DEFAULT_IRQ_NUM() PWM_IRQ_WRAP_0
+// backwards compatibility with RP2040
+#define PWM_IRQ_WRAP          PWM_IRQ_WRAP_0
+#define isr_pwm_wrap          isr_pwm_wrap_0
+#endif
+#endif
+
+
 #define LED_PIN 15
 
 #define BLINKY_MODES_CNT 2
